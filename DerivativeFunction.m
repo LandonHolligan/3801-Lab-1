@@ -1,4 +1,4 @@
-function [S_prime] = DerivativeFunction(S)
+function [S_prime] = DerivativeFunction(t, S)
 %DERIVATIVEFUNCTION Summary of this function goes here
 %   Detailed explanation goes here
 
