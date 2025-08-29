@@ -36,3 +36,13 @@ T = table(Relative_Tolerance,Tol_1e_neg2,Tol_1e_neg4,Tol_1e_neg6,Tol_1e_neg8,Tol
 
 f = uifigure;
 uit = uitable(f,'Data',T,'ColumnName',{'Variable','1e-2','1e-4','1e-6','1e-8','1e-10'});
+
+
+Cd = 0.6;
+d = 0.02;
+m = 0.05;
+g = 9.8;
+A = ((d/2)^2)*pi;
+
+State_Vector = [x,y,z : x_dot,y_dot,z_dot];
+

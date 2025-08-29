@@ -1,0 +1,16 @@
+function State_Vectordot = ObjectEOM(t,State_Vector,rho,Cd,A,m,g,wind_vel)
+
+Position = State_Vector(1,:);
+Velocity = State_Vector(2,:);
+
+Rel_vel = Velocity - wind_vel;
+
+F_drag = -0.5 .* rho .* Cd .* A .* Rel_vel;
+Gravity = m*g;
+
+State_Vectordot(1) = F_drag(1)/m;
+State_Vectordot(2) = F_drag(2)/m;
+State_Vectordot(3) = F_drag(3)/m + Gravity;
+
+
+end
