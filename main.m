@@ -52,3 +52,18 @@ z_dot = -20;
 State_Vector_Initial = [x,y,z : x_dot,y_dot,z_dot];
 Time_span = [0 20];
 [T_out_again,State_Vector_dot_out] = ode45(@ObjectEOM,Time_span,State_Vector_Initial,options);
+
+
+
+%% finding rho at Boulder Alt using stdatmo function 
+
+%            STDATMO OUTPUTS (copied from function comments):
+%           rho:   Density            kg/m^3          slug/ft^3
+%           a:     Speed of sound     m/s             ft/s
+%           T:     Temperature        °K              °R
+%           P:     Pressure           Pa              lbf/ft^2
+%           nu:    Kinem. viscosity   m^2/s           ft^2/s
+%           ZorH:  Height or altitude m               ft
+
+h = 1655; % meters (altitude of Boulder)
+[rho,a,temp,press,kvisc,ZorH] = stdatmo(h); % units are in SI 
