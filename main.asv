@@ -43,12 +43,7 @@ d = 0.02;
 m = 0.05;
 g = 9.8;
 A = ((d/2)^2)*pi;
-x = 0;
-y = 0;
-z = 0;
-x_dot = 0;
-y_dot = 20;
-z_dot = -20;
-State_Vector_Initial = [x,y,z : x_dot,y_dot,z_dot];
-Time_span = [0 20];
-[T_out_again,State_Vector_dot_out] = ode45(@ObjectEOM,Time_span,State_Vector_Initial,options);
+
+State_Vector = [x,y,z : x_dot,y_dot,z_dot];
+
+[T_out_again,State_Vector_dot_out] = ode45()

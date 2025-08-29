@@ -8,9 +8,9 @@ Rel_vel = Velocity - wind_vel;
 F_drag = -0.5 .* rho .* Cd .* A .* Rel_vel;
 Gravity = m*g;
 
-State_Vectordot(1) = F_drag(1)/m;
-State_Vectordot(2) = F_drag(2)/m;
-State_Vectordot(3) = F_drag(3)/m + Gravity;
+State_Vectordot(1) = -F_drag(1)/m;
+State_Vectordot(2) = -F_drag(2)/m;
+State_Vectordot(3) = -F_drag(3)/m + Gravity;
 
 
 end
