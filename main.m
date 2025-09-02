@@ -70,7 +70,7 @@ wind_vel = [0, 0, 0]';
 
 figure(2); 
 plot3(State_Vector_dot_out(:,1), State_Vector_dot_out(:,2), -State_Vector_dot_out(:,3), 'LineWidth',1.5);
-grid on; axis equal; set(gca,'ZDir','reverse');
+grid on; axis equal;
 xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)');
 title('Trajectory (negative z shown above xy-plane)');
 xlim([-100,100]);
