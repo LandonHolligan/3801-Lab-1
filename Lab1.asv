@@ -18,7 +18,7 @@ tspan = [0 20];
 opts = odeset('RelTol',1e-8,'AbsTol',1e-8);
 [tout,yout] = ode45(@FunctionLab1,tspan,y0,opts);
 
-% Plotting stacked subplots (w,x,y,z vs time)
+% Plotting stacked subplots (w,x,y,z vs time) ----
 figure('Name','Problem 1: state evolution','Units','normalized','Position',[.1 .1 .6 .7]);
 subplot(4,1,1);
 plot(tout,yout(:,1),'LineWidth',1.5);
@@ -36,16 +36,16 @@ subplot(4,1,4);
 plot(tout,yout(:,4),'LineWidth',1.5);
 ylabel('z (n.d.)'); xlabel('time (n.d.)'); grid on; title('z(t)');
 
-% Tolerance study 
+% ---- Tolerance study ----
 tol_values = [1e-2,1e-4,1e-6,1e-8,1e-10,1e-12];
 ref_tol = 1e-12;
 
-% computing reference solution (tol = 1e-12)
+% compute reference solution (tol = 1e-12)
 opts_ref = odeset('RelTol',ref_tol,'AbsTol',ref_tol);
 [~,y_ref] = ode45(@FunctionLab1,tspan,y0,opts_ref);
 y_ref20 = y_ref(end,:); % state at t=20
 
-% Preallocating results
+% preallocate results
 diff_table = zeros(4,length(tol_values)-1); % we will compare all but ref column
 col_names = {'1e-2','1e-4','1e-6','1e-8','1e-10','1e-12'};
 

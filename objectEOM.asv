@@ -13,37 +13,31 @@
 %   A         - cross-sectional area (m^2)
 %   m         - mass (kg)
 %   g         - gravitational acceleration (positive scalar, m/s^2)
-%   wind_vel  - 3x1 wind velocity vector in inertial coords [windN; windE; windD] (m/s)
+%   wind_vel  - 3x1 wind velocity vector in inertial coords [windN; windE; wD] (m/s)
 %
 % Output:
-%   xdot - 6x1 derivative vector [velN; velE; velD; accelN; accelE; accelD]
-
+%   xdot - 6x1 derivative vector [vN; vE; vD; aN; aE; aD]
 function xdot = objectEOM(t,x,rho,Cd,A,m,g,wind_vel)
 % unpack state
-pos = x(1:3);    % position [N;E;D]
-vel = x(4:6);    % velocity [vN; vE; vD]
+p = x(1:3);    % position [N;E;D]
+v = x(4:6);    % velocity [vN; vE; vD]
 
 % relative (air) velocity
-v_rel = vel - wind_vel(:);
-
-Vspeed = norm(v_rel);
+v_rel = v - wind_vel(:);
+V = norm(v_rel);
 
 % drag force (handle near-zero speed)
 
-if Vspeed == 0
-    F_drag = [0;0;0];
-else
-    F_drag = -0.5 * rho * Cd * A * Vspeed * v_rel; % vector drag (N)
-end
-
+    D = 0.5 * rho * V^2 * A * Cd;          % magnitude
+    F_drag = - D * (v_rel / V);            % vector (N)
 
 % gravity force in NED (positive down)
 F_grav = [0; 0; m*g];
 
 % total acceleration
-accel = (F_drag + F_grav) / m;
+a = (F_drag + F_grav) / m;
 
 xdot = zeros(6,1);
-xdot(1:3) = vel;
-xdot(4:6) = accel;
+xdot(1:3) = v;
+xdot(4:6) = a;
 end
