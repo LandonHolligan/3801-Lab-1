@@ -1,0 +1,82 @@
+% Contributors: Landon, Sayer, Mattias, Finley
+% Course number: ASEN 3801
+% File name: Lab1.m
+% Created: 08/28/2025
+%
+% Driver script for Problem 1:
+% - runs ode45 from t=0..20 for a selected nonzero initial condition
+% - creates a stacked-vertical 4-subplot figure for w,x,y,z
+% - performs tolerance study for tol values and tabulates absolute deviations at t=20
+clear; 
+close all; 
+clc;
+
+% ---- Choose a nonzero initial condition here ----
+y0 = [0.5; 0.1; -0.2; 0.05]; % [w; x; y; z] - change as desired
+tspan = [0 20];
+
+% ---- integrate using high precision for the main solution (tol = 1e-8 as requested) ----
+opts = odeset('RelTol',1e-8,'AbsTol',1e-8);
+[tout,yout] = ode45(@FunctionLab1,tspan,y0,opts);
+
+% ---- Plot stacked subplots (w,x,y,z vs time) ----
+figure('Name','Problem 1: state evolution','Units','normalized','Position',[.1 .1 .6 .7]);
+subplot(4,1,1);
+plot(tout,yout(:,1),'LineWidth',1.5);
+ylabel('w (n.d.)'); grid on; title('Problem 1: w(t)');
+
+subplot(4,1,2);
+plot(tout,yout(:,2),'LineWidth',1.5);
+ylabel('x (n.d.)'); grid on; title('x(t)');
+
+subplot(4,1,3);
+plot(tout,yout(:,3),'LineWidth',1.5);
+ylabel('y (n.d.)'); grid on; title('y(t)');
+
+subplot(4,1,4);
+plot(tout,yout(:,4),'LineWidth',1.5);
+ylabel('z (n.d.)'); xlabel('time (n.d.)'); grid on; title('z(t)');
+
+% ---- Tolerance study ----
+tol_values = [1e-2,1e-4,1e-6,1e-8,1e-10,1e-12];
+ref_tol = 1e-12;
+
+% compute reference solution (tol = 1e-12)
+opts_ref = odeset('RelTol',ref_tol,'AbsTol',ref_tol);
+[~,y_ref] = ode45(@FunctionLab1,tspan,y0,opts_ref);
+y_ref20 = y_ref(end,:); % state at t=20
+
+% preallocate results
+diff_table = zeros(4,length(tol_values)-1); % we will compare all but ref column
+col_names = {'1e-2','1e-4','1e-6','1e-8','1e-10','1e-12'};
+
+for i=1:length(tol_values)
+    tol = tol_values(i);
+    opts_i = odeset('RelTol',tol,'AbsTol',tol);
+    [~,y_i] = ode45(@FunctionLab1,tspan,y0,opts_i);
+    y_i20 = y_i(end,:);
+    if tol==ref_tol
+        % no diff: store zeros
+        diffs = abs(y_i20 - y_ref20);
+    else
+        diffs = abs(y_i20 - y_ref20);
+    end
+    diff_table(:,i) = diffs(:);
+end
+
+% Print table to command window (rows: w,x,y,z; columns: tol values)
+fprintf('Absolute differences at t = 20 compared to reference tol = %g\n',ref_tol);
+fprintf('tol\t\t w\t\t x\t\t y\t\t z\n');
+for i=1:length(tol_values)
+    fprintf('%7.1e\t%10.4e\t%10.4e\t%10.4e\t%10.4e\n',tol_values(i),diff_table(1,i),diff_table(2,i),diff_table(3,i),diff_table(4,i));
+end
+
+% optional: display as a simple figure (log-log) for readability
+figure('Name','Tolerance study - absolute differences at t=20');
+loglog(tol_values, diff_table(1,:),'o-','MarkerSize',8); hold on;
+loglog(tol_values, diff_table(2,:),'s-','MarkerSize',8);
+loglog(tol_values, diff_table(3,:),'^-','MarkerSize',8);
+loglog(tol_values, diff_table(4,:),'d-','MarkerSize',8);
+grid on; xlabel('tol (Rel=Abs)'); ylabel('abs difference at t=20');
+legend('w','x','y','z','Location','best'); title('Problem 1 tolerance dependence (reference tol=1e-12)');
+set(gca,'XDir','reverse'); % show small tol to the right for intuition

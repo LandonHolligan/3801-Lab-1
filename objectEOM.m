@@ -1,0 +1,43 @@
+% Contributors: 
+% Course number: ASEN 3801
+% File name: objectEOM.m
+% Created: 09/01/2025
+%
+% xdot = objectEOM(t,x,rho,Cd,A,m,g,wind_vel)
+%
+% Inputs:
+%   t         - time (not used but required by ODE format)
+%   x         - 6x1 state: [pN; pE; pD; vN; vE; vD] (NED inertial coordinates)
+%   rho       - air density (kg/m^3)
+%   Cd        - drag coefficient (scalar)
+%   A         - cross-sectional area (m^2)
+%   m         - mass (kg)
+%   g         - gravitational acceleration (positive scalar, m/s^2)
+%   wind_vel  - 3x1 wind velocity vector in inertial coords [wN; wE; wD] (m/s)
+%
+% Output:
+%   xdot - 6x1 derivative vector [vN; vE; vD; aN; aE; aD]
+function xdot = objectEOM(t,x,rho,Cd,A,m,g,wind_vel)
+% unpack state
+p = x(1:3);    % position [N;E;D]
+v = x(4:6);    % velocity [vN; vE; vD]
+
+% relative (air) velocity
+v_rel = v - wind_vel(:);
+V = norm(v_rel);
+
+% drag force (handle near-zero speed)
+
+    D = 0.5 * rho * V^2 * A * Cd;          % magnitude
+    F_drag = - D * (v_rel / V);            % vector (N)
+
+% gravity force in NED (positive down)
+F_grav = [0; 0; m*g];
+
+% total acceleration
+a = (F_drag + F_grav) / m;
+
+xdot = zeros(6,1);
+xdot(1:3) = v;
+xdot(4:6) = a;
+end
