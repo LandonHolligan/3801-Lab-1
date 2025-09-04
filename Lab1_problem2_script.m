@@ -1,4 +1,4 @@
-% Contributors: 
+% Contributors: Landon, Sayer, Mattias, Finley
 % Course number: ASEN 3801
 % File name: Lab1_problem2_script.m
 % Created: 08/28/2025
@@ -7,12 +7,11 @@ clear;
 close all;
 clc;
 
-% ---- Constants ----
-m = 0.050;            % kg (50 g)
-diam = 0.02;          % m (2.0 cm)
-A = pi*((diam/2)^2);    % cross-sectional area (m^2)
-Cd = 0.6;             % drag coefficient
-g = 9.81;          % m/s^2
+m = 0.050;  
+diam = 0.02; 
+A = pi*((diam/2)^2);
+Cd = 0.6; 
+g = 9.81;
 
 % 2b: get air density at Boulder geopotential altitude 1655 m
 
@@ -20,23 +19,22 @@ g = 9.81;          % m/s^2
 
 % 2c: initial condition & simulate until ground
 
-p0 = [0; 0; 0]; % origin
-v0 = [0; 20; -20]; % [vN; vE; vD] where vE = +20 m/s East, vD = -20 m/s (upwards)
+p0 = [0; 0; 0];
+v0 = [0; 20; -20];
 x0 = [p0; v0];
 
 % If starting at ground and velocity upward you immediately have pD=0 and event triggers.
 
-x0(3) = -1e-3; % start 1 mm above ground (down positive) to allow flight
+x0(3) = -1e-3; 
 tspan = [0 100];
-wind_vel = [0;0;0]; % zero wind
+wind_vel = [0;0;0];
 
 options = odeset('RelTol',1e-8,'AbsTol',1e-8,'Events',@hitGroundEvent);
-[t,x] = ode45(@(t,x) objectEOM(t,x,rho,Cd,A,m,g,wind_vel), tspan, x0, options);
+[t,xc] = ode45(@(t,x) objectEOM(t,x,rho,Cd,A,m,g,wind_vel), tspan, x0, options);
 
 % extract trajectory
-pos = x(:,1:3);
+pos = xc(:,1:3);
 
-% Convert to x = North, y = East, z = -Down so that positive up
 X = pos(:,1);
 Y = pos(:,2);
 Z = -pos(:,3);
@@ -53,20 +51,18 @@ grid on;
 winds = linspace(-30,30,21);
 
 landingN = zeros(size(winds));
-landingE = zeros(size(winds));
 landingDist = zeros(size(winds));
 
 for i=1:length(winds)
     NorthWind = winds(i);
     wind_vel = [NorthWind;0;0]; % varies north wind
-    [t_i,x_i,te_i,xe_i] = ode45(@(t,x) objectEOM(t,x,rho,Cd,A,m,g,wind_vel), tspan, x0, options);
-        land = xe_i(1:3);
+    [~,~,~,xd] = ode45(@(t,x) objectEOM(t,x,rho,Cd,A,m,g,wind_vel), tspan, x0, options);
+        land = xd(1:3);
         landingN(i) = land(1); % N coordinate at landing
-        landingE(i) = land(2);
-        landingDist(i) = norm(land); % distance from origin in 3D
+        landingDist(i) = norm(land(1:2)); % distance from origin in 3D
 end
 
-% Plot results for 2d
+% Plot 1: North feflection per m/s of wind
 
 dNdw = gradient(landingN, winds);
 
@@ -76,10 +72,57 @@ grid on; xlabel('North wind w_x (m/s)');
 ylabel('North Landing distance / North wind w_x  [m per (m/s)]');
 title('2(d)(1): North deflection per m/s of wind');
 
+% Plot 2: Change in total Distance per m/s of wind
+
 dRdw = gradient(landingDist, winds);
 
 figure();
 plot(winds, dRdw, '-o','LineWidth',1);
-grid on; xlabel('North wind w_x (m/s)');
+grid on; 
+xlabel('North wind w_x (m/s)');
 ylabel('Change in Range / North wind w_x  [m per (m/s)]');
 title('2(d)(2): Change in total distance per m/s of wind');
+
+% 2e:
+
+h_vals = [0 500 1000 1500 2000 3000 4000 5000];
+
+landingDist_mat = zeros(length(h_vals), length(winds));
+
+for a = 1:length(h_vals)
+    rho_a = stdatmo(h_vals(a));
+
+    for i = 1:length(winds)
+        NorthWind = winds(i);
+        wind_vel = [NorthWind; 0; 0];
+
+        [~,~,~,xe] = ode45(@(t,x) objectEOM(t,x,rho_a,Cd,A,m,g,[winds(i);0;0]), tspan, x0, options);
+
+        landingDist_mat(a,i) = norm(xe(1:2));
+    end
+end
+
+% Plot 1: distance vs wind
+figure; 
+hold on; 
+grid on;
+for a = 1:length(h_vals)
+    plot(winds, landingDist_mat(a,:), 'LineWidth', 1.5, 'DisplayName', sprintf('H = %d m', h_vals(a)));
+end
+
+xlabel('North wind w_x (m/s)'); 
+ylabel('Landing distance (m)');
+title('Distance vs wind for various geopotential altitudes');
+legend('Location','bestoutside'); 
+hold off;
+
+% Plot 2: minimum distance vs altitude
+
+minDist = min(landingDist_mat, [], 2);
+
+figure; 
+plot(h_vals, minDist, '-o', 'LineWidth', 1.5);
+grid on;
+xlabel('Geopotential altitude (m)'); 
+ylabel('Minimum landing distance (m)');
+title('Minimum landing distance vs altitude');
