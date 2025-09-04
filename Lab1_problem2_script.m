@@ -26,12 +26,12 @@ x0 = [p0; v0];
 
 % If starting at ground and velocity upward you immediately have pD=0 and event triggers.
 
-x0(3) = 1e-3; % start 1 mm above ground (down positive) to allow flight
+x0(3) = -1e-3; % start 1 mm above ground (down positive) to allow flight
 tspan = [0 100];
 wind_vel = [0;0;0]; % zero wind
 
-opts = odeset('RelTol',1e-8,'AbsTol',1e-8,'Events',@hitGroundEvent);
-[t,x,te,xe,ie] = ode45(@(t,x) objectEOM(t,x,rho,Cd,A,m,g,wind_vel), tspan, x0, opts);
+options = odeset('RelTol',1e-8,'AbsTol',1e-8,'Events',@hitGroundEvent);
+[t,x] = ode45(@(t,x) objectEOM(t,x,rho,Cd,A,m,g,wind_vel), tspan, x0, options);
 
 % extract trajectory
 pos = x(:,1:3);
@@ -50,35 +50,36 @@ grid on;
 
 
 % 2d: vary wind speed in North direction and record landing x-coordinate and distance
-winds = linspace(-30,30,20);
+winds = linspace(-30,30,21);
 
 landingN = zeros(size(winds));
-
+landingE = zeros(size(winds));
 landingDist = zeros(size(winds));
 
 for i=1:length(winds)
     NorthWind = winds(i);
     wind_vel = [NorthWind;0;0]; % varies north wind
-    [t_i,x_i,te_i,xe_i] = ode45(@(t,x) objectEOM(t,x,rho,Cd,A,m,g,wind_vel), tspan, x0, opts);
+    [t_i,x_i,te_i,xe_i] = ode45(@(t,x) objectEOM(t,x,rho,Cd,A,m,g,wind_vel), tspan, x0, options);
         land = xe_i(1:3);
         landingN(i) = land(1); % N coordinate at landing
-        landingDist(i) = norm(land'); % distance from origin in 3D
+        landingE(i) = land(2);
+        landingDist(i) = norm(land); % distance from origin in 3D
 end
 
-
 % Plot results for 2d
-figure();
-plot(winds, landingN,'-o','LineWidth',1);
-grid on; 
-xlabel('North Wind Speed (m/s)');
-ylabel('Landing North (m)');
-title('Problem 2d: Landing N Coordinate vs Northward Wind Speed');
+
+dNdw = gradient(landingN, winds);
 
 figure();
-plot(winds, landingDist,'-o','LineWidth', 1);
-grid on;
-xlabel('North Wind Speed (m/s)');
-ylabel('Landing Distance From Origin (m)');
-title('Problem 2d: Distance (E) vs Northward Wind Speed');
+plot(winds, dNdw, '-o','LineWidth',1);
+grid on; xlabel('North wind w_x (m/s)');
+ylabel('North Landing distance / North wind w_x  [m per (m/s)]');
+title('2(d)(1): North deflection per m/s of wind');
 
+dRdw = gradient(landingDist, winds);
 
+figure();
+plot(winds, dRdw, '-o','LineWidth',1);
+grid on; xlabel('North wind w_x (m/s)');
+ylabel('Change in Range / North wind w_x  [m per (m/s)]');
+title('2(d)(2): Change in total distance per m/s of wind');
