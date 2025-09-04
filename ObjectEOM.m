@@ -1,16 +1,28 @@
-function State_Vectordot = ObjectEOM(t,State_Vector,rho,Cd,A,m,g,wind_vel)
+% Contributors: 
+% Course number: ASEN 3801
+% File name: objectEOM.m
+% Created: 09/01/2025
 
-Position = State_Vector(1:3); % x,y,z
+function xdot = objectEOM(t,x,rho,Cd,A,m,g,wind_vel)
+pos = x(1:3); 
+vel = x(4:6);
 
-Velocity = State_Vector(4:6); % v_x, v_y, v_y
-Rel_vel = Velocity - wind_vel;
-V_rel = norm(Rel_vel);
+v_rel = vel - wind_vel(:);
 
-F_drag = -0.5 .* rho .* Cd .* A * (V_rel) .^2 * (Rel_vel/V_rel); % drag in direction of v
-Gravity = [0,0,-m*g]';
+Vspeed = norm(v_rel);
 
-acceleration = (F_drag + Gravity) / m;
+if Vspeed == 0
+    F_drag = [0, 0, 0]';
+else
+    F_drag = -0.5 * rho * Cd * A * Vspeed * v_rel; 
+end
 
-State_Vectordot = [Velocity; acceleration];
+F_grav = [0, 0, m*g]';
 
+% total acceleration
+accel = (F_drag + F_grav) / m;
+
+xdot = zeros(6,1);
+xdot(1:3) = vel;
+xdot(4:6) = accel;
 end
